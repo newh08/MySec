@@ -18,5 +18,5 @@ async def get_db():
 
 async def init_db():
     async with engine.begin() as conn:
-        from app.models import Base
+        from app.models import DailyLog, Schedule
         await conn.run_sync(Base.metadata.create_all)

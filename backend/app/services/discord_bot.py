@@ -54,11 +54,17 @@ class ReflectionCog(commands.Cog):
     def __init__(self, bot: "SecretaryBot"):
         self.bot = bot
 
+    @commands.command(name="ping")
+    async def ping(self, ctx: commands.Context):
+        print(f"[Discord] Ping command received from {ctx.author}")
+        await ctx.send("pong!")
+
     @commands.command(name="회고", aliases=["start", "시작"])
     async def start_reflection(self, ctx: commands.Context):
         if ctx.author.id in self.bot.sessions:
             await ctx.send("⏳ 이미 진행 중인 회고 세션이 있습니다. `끝`이라고 입력해주세요.")
             return
+        await ctx.send("🌙 **오늘의 회고를 시작합니다!** 잠시만 기다려주세요...")
         await self.bot.start_session(ctx.channel, ctx.author.id)
 
     @commands.command(name="취소", aliases=["cancel"])
@@ -77,22 +83,22 @@ class SecretaryBot(commands.Bot):
         intents.message_content = True
         super().__init__(command_prefix="!", intents=intents)
         self.sessions: dict[int, ConversationSession] = {}
-        self._ready = asyncio.Event()
 
     async def on_ready(self):
         print(f"[Discord] Logged in as {self.user} (ID: {self.user.id})")
-        self._ready.set()
-
-    async def wait_until_ready(self):
-        await self._ready.wait()
+        for guild in self.guilds:
+            print(f"[Discord] Connected to guild: {guild.name} (ID: {guild.id})")
 
     async def setup_hook(self):
+        print("[Discord] setup_hook called - registering cogs")
         await self.add_cog(ReflectionCog(self))
+        print("[Discord] Cogs registered")
 
     async def on_message(self, message: discord.Message):
         if message.author.bot:
             return
 
+        print(f"[Discord] Message from {message.author}: '{message.content[:50]}'")
         await self.process_commands(message)
 
         if message.author.id in self.sessions:
@@ -155,11 +161,11 @@ class SecretaryBot(commands.Bot):
 
     async def start_session(self, channel: discord.TextChannel, user_id: int):
         session = ConversationSession(user_id, channel.id)
+
         session.ai_question = await generate_daily_question()
         self.sessions[user_id] = session
 
         intro = (
-            "🌙 **오늘의 회고를 시작합니다!**\n"
             "하루를 돌아보며 질문에 하나씩 답변해 주세요.\n"
             "모든 질문에 답하면 AI가 꼬리 질문을 이어갈 수도 있어요.\n"
             "답변이 끝나면 `끝` 또는 `완료`라고 입력해 주세요.\n"

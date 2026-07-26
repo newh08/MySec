@@ -29,7 +29,15 @@ def _call_gemini(prompt: str) -> str:
     return response.text.strip()
 
 
+FALLBACK_QUESTIONS = [
+    "오늘 하루 중 가장 의미 있었던 순간은 언제였나요?",
+    "오늘 새롭게 배운 것이나 깨달은 점이 있다면 무엇인가요?",
+    "오늘의 에너지 레벨을 10점 만점으로 표현한다면 몇 점인가요?",
+]
+
+
 async def generate_daily_question() -> str:
+    import random
     prompt = (
         "너는 사용자의 하루를 돌아보게 하는 AI 비서야.\n"
         "사용자의 지난 답변은 아직 없으니, 날씨나 요일 등 일반적인 맥락을 고려해서\n"
@@ -37,8 +45,15 @@ async def generate_daily_question() -> str:
         "질문은 2~3문장 이내로 간결하게 해줘."
     )
     loop = asyncio.get_running_loop()
-    result = await loop.run_in_executor(executor, _call_gemini, prompt)
-    return result
+    try:
+        result = await asyncio.wait_for(
+            loop.run_in_executor(executor, _call_gemini, prompt),
+            timeout=10,
+        )
+        return result
+    except Exception as e:
+        print(f"[LLM] generate_daily_question failed: {e}")
+        return random.choice(FALLBACK_QUESTIONS)
 
 
 async def generate_followup_question(
@@ -57,7 +72,14 @@ async def generate_followup_question(
         "답변은 질문만 출력해줘 (따옴표 없이)."
     )
     loop = asyncio.get_running_loop()
-    result = await loop.run_in_executor(executor, _call_gemini, prompt)
+    try:
+        result = await asyncio.wait_for(
+            loop.run_in_executor(executor, _call_gemini, prompt),
+            timeout=10,
+        )
+    except Exception as e:
+        print(f"[LLM] generate_followup_question failed: {e}")
+        return None
     if result.strip().upper() == "END":
         return None
     return result
@@ -98,7 +120,14 @@ async def summarize_and_extract_schedules(
         "- JSON 외의 다른 텍스트는 출력하지 마."
     )
     loop = asyncio.get_running_loop()
-    result = await loop.run_in_executor(executor, _call_gemini, prompt)
+    try:
+        result = await asyncio.wait_for(
+            loop.run_in_executor(executor, _call_gemini, prompt),
+            timeout=15,
+        )
+    except Exception as e:
+        print(f"[LLM] summarize_and_extract_schedules failed: {e}")
+        return _fallback_summary(history_text), []
 
     json_match = re.search(r"```(?:json)?\s*(\{.*?\})\s*```", result, re.DOTALL)
     if json_match:
