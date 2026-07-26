@@ -1,8 +1,8 @@
-# MySecretary — Development Guide
+# MySecretary — 개발 가이드
 
-## Project Overview
+## 프로젝트 개요
 
-Mini PC에서 24시간 Docker 기반으로 동작하는 개인 AI 비서 & 회고 대시보드 시스템.
+미니 PC에서 24시간 Docker 기반으로 동작하는 개인 AI 비서 & 회고 대시보드 시스템.
 
 - **매일 밤 23:00** Discord로 회고 질문 전송
 - Gemini AI가 멀티턴 대화로 하루를 요약
@@ -11,46 +11,46 @@ Mini PC에서 24시간 Docker 기반으로 동작하는 개인 AI 비서 & 회�
 
 ---
 
-## Tech Stack
+## 기술 스택
 
-| Layer | Technology |
-|-------|------------|
-| Backend | Python 3.12, FastAPI, SQLAlchemy (async) |
-| Database | SQLite (via aiosqlite) |
-| Bot | discord.py 2.4 |
+| 레이어 | 기술 |
+|--------|------|
+| 백엔드 | Python 3.12, FastAPI, SQLAlchemy (async) |
+| 데이터베이스 | SQLite (aiosqlite) |
+| 봇 | discord.py 2.4 |
 | LLM | Google Gemini 2.5 Flash API |
-| Scheduler | APScheduler (AsyncIOScheduler) |
-| Calendar | Google Calendar API v3 |
-| Frontend | Next.js 14, Tailwind CSS, shadcn/ui |
-| Infra | Docker Compose |
+| 스케줄러 | APScheduler (AsyncIOScheduler) |
+| 캘린더 | Google Calendar API v3 |
+| 프론트엔드 | Next.js 14, Tailwind CSS, shadcn/ui |
+| 인프라 | Docker Compose |
 
 ---
 
-## Project Structure
+## 프로젝트 구조
 
 ```
 MySecretary/
 ├── backend/
 │   ├── app/
-│   │   ├── main.py                # FastAPI entrypoint, bot + scheduler launch
+│   │   ├── main.py                # FastAPI 진입점, bot + 스케줄러 실행
 │   │   ├── config.py              # pydantic-settings (.env)
-│   │   ├── database.py            # SQLAlchemy async engine + session
+│   │   ├── database.py            # SQLAlchemy async 엔진 + 세션
 │   │   ├── models/
-│   │   │   ├── daily_log.py       # daily_logs table
-│   │   │   └── schedule.py        # schedules table
+│   │   │   ├── daily_log.py       # daily_logs 테이블
+│   │   │   └── schedule.py        # schedules 테이블
 │   │   └── services/
-│   │       ├── discord_bot.py     # Discord bot + session management
-│   │       ├── llm_service.py     # Gemini API (question, follow-up, summary)
-│   │       ├── scheduler.py       # APScheduler daily cron (23:00)
-│   │       └── calendar_service.py# Google Calendar sync
-│   ├── data/                      # SQLite DB (volume mount)
+│   │       ├── discord_bot.py     # Discord 봇 + 세션 관리
+│   │       ├── llm_service.py     # Gemini API (질문, 꼬리 질문, 요약)
+│   │       ├── scheduler.py       # APScheduler 일일 크론 (23:00)
+│   │       └── calendar_service.py# Google Calendar 연동
+│   ├── data/                      # SQLite DB (볼륨 마운트)
 │   ├── Dockerfile
 │   ├── requirements.txt
 │   └── .env.example
 ├── frontend/
 │   ├── src/
 │   │   ├── app/                   # Next.js App Router
-│   │   ├── components/ui/         # shadcn/ui components
+│   │   ├── components/ui/         # shadcn/ui 컴포넌트
 │   │   └── lib/utils.ts
 │   ├── Dockerfile
 │   └── package.json
@@ -61,42 +61,42 @@ MySecretary/
 
 ---
 
-## Environment Variables
+## 환경 변수
 
-Copy `backend/.env.example` to `backend/.env` and fill in:
+`backend/.env.example`을 `backend/.env`로 복사 후 값을 입력하세요:
 
-| Variable | Description |
-|----------|-------------|
-| `DISCORD_BOT_TOKEN` | Discord bot token (from Dev Portal) |
-| `DISCORD_CHANNEL_ID` | Channel ID for reflection messages |
-| `DISCORD_USER_ID` | User ID for DM fallback |
-| `GEMINI_API_KEY` | Google AI Studio API key |
-| `GEMINI_MODEL` | Gemini model name (default: `gemini-2.5-flash`) |
-| `GOOGLE_CALENDAR_CLIENT_ID` | Google OAuth client ID |
-| `GOOGLE_CALENDAR_CLIENT_SECRET` | Google OAuth client secret |
-| `GOOGLE_REFRESH_TOKEN` | OAuth refresh token for Calendar API |
-| `GOOGLE_CALENDAR_ID` | Calendar ID (default: `primary`) |
-| `DATABASE_URL` | SQLite connection string |
-| `TIMEZONE` | Timezone (default: `Asia/Seoul`) |
-| `FIXED_QUESTION_COUNT` | Number of fixed questions (default: 5) |
-| `MAX_FOLLOW_UPS` | Max AI follow-up questions (default: 3) |
+| 변수명 | 설명 |
+|--------|------|
+| `DISCORD_BOT_TOKEN` | Discord 봇 토큰 (Dev Portal) |
+| `DISCORD_CHANNEL_ID` | 회고 메시지를 보낼 채널 ID |
+| `DISCORD_USER_ID` | DM 폴백용 사용자 ID |
+| `GEMINI_API_KEY` | Google AI Studio API 키 |
+| `GEMINI_MODEL` | Gemini 모델명 (기본값: `gemini-2.5-flash`) |
+| `GOOGLE_CALENDAR_CLIENT_ID` | Google OAuth 클라이언트 ID |
+| `GOOGLE_CALENDAR_CLIENT_SECRET` | Google OAuth 클라이언트 시크릿 |
+| `GOOGLE_REFRESH_TOKEN` | Calendar API용 OAuth refresh 토큰 |
+| `GOOGLE_CALENDAR_ID` | 캘린더 ID (기본값: `primary`) |
+| `DATABASE_URL` | SQLite 연결 문자열 |
+| `TIMEZONE` | 시간대 (기본값: `Asia/Seoul`) |
+| `FIXED_QUESTION_COUNT` | 고정 질문 개수 (기본값: 5) |
+| `MAX_FOLLOW_UPS` | 최대 AI 꼬리 질문 수 (기본값: 3) |
 
 ---
 
-## Running Locally
+## 로컬 실행
 
-### Backend
+### 백엔드
 
 ```bash
 cd backend
 python -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
-cp .env.example .env   # fill in your values
+cp .env.example .env   # 값 입력 필요
 uvicorn app.main:app --reload
 ```
 
-### Frontend
+### 프론트엔드
 
 ```bash
 cd frontend
@@ -112,59 +112,59 @@ docker compose up --build
 
 ---
 
-## Discord Bot Commands
+## Discord 봇 명령어
 
-| Command | Aliases | Description |
-|---------|---------|-------------|
-| `!회고` | `!start`, `!시작` | Start a reflection session immediately |
-| `!취소` | `!cancel` | Cancel the current session |
+| 명령어 | 별칭 | 설명 |
+|--------|------|------|
+| `!회고` | `!start`, `!시작` | 회고 세션 즉시 시작 |
+| `!취소` | `!cancel` | 진행 중인 세션 취소 |
 
-During a session, users reply to questions normally. Type `끝` / `완료` / `종료` to end early.
+세션 중에는 질문에 일반 채팅으로 답변하면 됩니다. `끝` / `완료` / `종료`를 입력하면 조기 종료됩니다.
 
 ---
 
-## Architecture: Conversation Flow
+## 아키텍처: 대화 흐름
 
 ```
 23:00 KST (APScheduler)
        │
        ▼
-Discord Bot sends intro + Q1..Q5 + AI question
+Discord 봇 → 인사말 + 질문 5개 + AI 질문 1개 전송
        │
-       ▼  (user replies)
-Bot receives answer → stores in session history
+       ▼  (사용자 답변)
+봇이 답변 수신 → 세션 히스토리에 저장
        │
-       ▼  (follow-up rounds, max 3)
-Bot generates AI follow-up question via Gemini
+       ▼  (꼬리 질문, 최대 3회)
+Gemini로 꼬리 질문 생성 → 사용자에게 전송
        │
-       ▼  (user replies or says "끝")
-Bot sends to Gemini for:
-  1. Markdown summary
-  2. JSON schedule list
+       ▼  (사용자 답변 또는 "끝")
+Gemini로 최종 요청:
+  1. Markdown 요약문
+  2. JSON 일정 목록
        │
-       ├──▶ Save DailyLog + Schedule to SQLite
-       └──▶ Sync schedules to Google Calendar
+       ├──▶ DailyLog + Schedule → SQLite 저장
+       └──▶ Schedule → Google Calendar 동기화 (실패해도 DB 저장은 유지)
 ```
 
 ---
 
-## API Endpoints
+## API 엔드포인트
 
-| Method | Path | Description |
-|--------|------|-------------|
-| GET | `/health` | Health check + bot status |
+| 메서드 | 경로 | 설명 |
+|--------|------|------|
+| GET | `/health` | 헬스 체크 + 봇 상태 |
 
 ---
 
-## Git Workflow
+## Git 워크플로우
 
 ```bash
-# Develop branch
+# Develop 브랜치
 git checkout develop
 git add -A && git commit -m "..."
 git push origin develop
 
-# Merge to master
+# Master에 머지
 git checkout master
 git merge develop
 git push origin master
@@ -173,21 +173,25 @@ git checkout develop
 
 ---
 
-## Troubleshooting
+## 트러블슈팅
 
 ### "No module named 'discord'"
 ```bash
 pip install -r requirements.txt
 ```
 
-### Bot not responding
-- Check `DISCORD_BOT_TOKEN` in `.env`
-- Ensure bot has `MESSAGE CONTENT INTENT` enabled in Discord Developer Portal
+### 봇이 응답하지 않음
+- `.env`의 `DISCORD_BOT_TOKEN` 확인
+- Discord Developer Portal에서 봇의 `MESSAGE CONTENT INTENT` 활성화 필요
 
-### Google Calendar auth
-1. Go to Google Cloud Console → APIs & Services → Credentials
-2. Create OAuth 2.0 Client ID (Desktop app)
-3. Run Google's OAuth playground once to get refresh token
+### Google Calendar 인증
+1. Google Cloud Console → APIs & Services → Credentials
+2. OAuth 2.0 클라이언트 ID (Desktop app) 생성
+3. Google OAuth Playground에서 refresh token 발급
 
-### Database lock errors
-SQLite allows one writer at a time. Ensure only one backend instance runs.
+### 데이터베이스 lock 오류
+SQLite는 한 번에 하나의 쓰기만 허용합니다. 백엔드 인스턴스가 하나만 실행 중인지 확인하세요.
+
+### Calendar 동기오류 (DB 저장에는 영향 없음)
+Calendar API 키/토큰이 없거나 오류가 발생해도 `daily_logs` 저장은 정상 완료됩니다.
+일정 동기화만 건너뛰고 로그가 출력되므로 안심하세요.
