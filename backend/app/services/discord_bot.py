@@ -7,6 +7,8 @@ import discord
 from discord.ext import commands
 
 from app.config import settings
+from sqlalchemy import select
+
 from app.database import async_session
 from app.models import DailyLog, Schedule
 from app.services.llm_service import (
@@ -190,14 +192,26 @@ class SecretaryBot(commands.Bot):
 
             async with async_session() as db_session:
                 today = datetime.now(timezone.utc).date()
-                daily_log = DailyLog(
-                    date=today,
-                    summary_markdown=summary_md,
-                    raw_conversation_json=json.dumps(
-                        session.to_dict(), ensure_ascii=False
-                    ),
+
+                result = await db_session.execute(
+                    select(DailyLog).where(DailyLog.date == today)
                 )
-                db_session.add(daily_log)
+                existing = result.scalar_one_or_none()
+                if existing:
+                    existing.summary_markdown = summary_md
+                    existing.raw_conversation_json = json.dumps(
+                        session.to_dict(), ensure_ascii=False
+                    )
+                    daily_log = existing
+                else:
+                    daily_log = DailyLog(
+                        date=today,
+                        summary_markdown=summary_md,
+                        raw_conversation_json=json.dumps(
+                            session.to_dict(), ensure_ascii=False
+                        ),
+                    )
+                    db_session.add(daily_log)
                 await db_session.flush()
 
                 calendar_sync_needed = False
