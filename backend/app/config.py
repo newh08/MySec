@@ -6,7 +6,7 @@ class Settings(BaseSettings):
     discord_channel_id: str = ""
     discord_user_id: str = ""
     gemini_api_key: str = ""
-    gemini_model: str = "gemini-2.0-flash"
+    gemini_model: str = "gemini-2.5-flash-lite"
     google_calendar_client_id: str = ""
     google_calendar_client_secret: str = ""
     google_refresh_token: str = ""
